@@ -1,6 +1,6 @@
-import { StyledTitle } from "./index.style";
+import { Game } from "../components/Game/Game";
 
 
 export default function Home() {
-  return <StyledTitle>Hello, world!</StyledTitle>
+  return <Game />
 }
