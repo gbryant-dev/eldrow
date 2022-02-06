@@ -4,6 +4,10 @@ import { Header } from '../Header/Header';
 import { Keyboard } from '../Keyboard/Keyboard';
 import { Container } from './Game.style';
 
+
+const ROWS = 6
+const COLUMNS = 5
+
 interface GameProps {
     
 }
@@ -11,7 +15,7 @@ interface GameProps {
 export const Game: FC<GameProps> = () => {
     return <Container>
         <Header />
-        <Board />
+        <Board rows={ROWS} columns={COLUMNS} />
         <Keyboard />
     </Container>
 }
