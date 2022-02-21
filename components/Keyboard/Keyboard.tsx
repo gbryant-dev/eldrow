@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { KeyboardRow } from "./KeybaordRow/KeyboardRow";
+import { KeyboardRow } from "./KeyboardRow/KeyboardRow";
 import { Container } from "./Keyboard.style";
 
 

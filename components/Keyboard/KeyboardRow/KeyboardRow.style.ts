@@ -6,14 +6,6 @@ export const Container = styled.div`
     flex-grow: 1;
 `
 
-export const Button = styled.button`
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-`
-
 export const Spacer = styled.div`
     flex: 0.5;
 `
