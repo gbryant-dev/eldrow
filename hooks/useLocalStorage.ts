@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 
+// eslint-disable-next-line no-unused-vars
 type Dispatch<A> = (action: A) => void
+// eslint-disable-next-line no-unused-vars
 type SetAction<S> = S | ((prevState: S) => S)
 
 function useLocalStorage<T>(key: string, initialValue?: T): [value: T, set: Dispatch<SetAction<T>>] {

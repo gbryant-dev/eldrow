@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import Backdrop from '../Backdrop/Backdrop'
-import { CloseIcon, Container, MotionContainer } from './Modal.style'
-import { AnimatePresence, motion } from 'framer-motion';
+import { CloseIcon, MotionContainer } from './Modal.style'
+import { AnimatePresence } from 'framer-motion';
 
 interface Props {
   show?: boolean;

@@ -1,4 +1,4 @@
-import { BoardState, CellState, GameStats } from "../../types"
+import { BoardState, CellState } from "../../types"
 import words from "../../words"
 import { COLUMNS, ROWS } from "./constants"
 
@@ -25,8 +25,8 @@ export const getWinKeyword = (row: number) => {
 }
 
 export const getInitialBoardState = () => {
-    const guesses = Array.from({ length: COLUMNS }).map(_ => null)
-    const evaluations = Array.from({ length: ROWS }).map(_ => Array.from({ length: COLUMNS }).map(_ => CellState.EMPTY))
+    const guesses = Array.from({ length: COLUMNS }).map(() => null)
+    const evaluations = Array.from({ length: ROWS }).map(() => Array.from({ length: COLUMNS }).map(() => CellState.EMPTY))
 
     return { guesses, evaluations }
 }
