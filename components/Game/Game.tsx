@@ -1,15 +1,16 @@
 import React, { FC, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { GameContextProvider } from '../../GameContext/GameContext';
-import { BoardState, BoardType, CellState, GameStatus } from '../../types';
+import { BoardState, BoardType, CellState, GameStats, GameStatus } from '../../types';
 import { Board } from '../Board/Board';
 import { Header } from '../Layout/Header/Header';
 import { Keyboard } from '../Keyboard/Keyboard';
 import { Container } from './Game.style';
 import words from '../../words';
 import useLocalStorage from '../../hooks/useLocalStorage';
-import { COLUMNS, getWordForTheDay, ROWS, setupGame } from './helper';
+import { getWordForTheDay, setupGame } from './helper';
+import { ROWS, COLUMNS, INITIAL_GAME_STATS } from './constants';
 import Modal from '../Layout/Modal/Modal';
-import GameStats from '../GameStats/GameStats';
+import GameStatistics from '../GameStats/GameStats';
 
 
 export const Game: FC = () => {
@@ -19,6 +20,7 @@ export const Game: FC = () => {
     const [solution, setSolution] = useLocalStorage<string>('solution', '')
     const [gameStatus, setGameStatus] = useLocalStorage<GameStatus>('gameStatus', GameStatus.STARTED)
     const [showModal, setShowModal] = useState(false)
+    const [gameStats, setGameStats] = useLocalStorage<GameStats>('statistics', INITIAL_GAME_STATS)
 
     const containerRef = useRef<HTMLDivElement>(null)
     const currentGuessRef = useRef<string[]>([])
@@ -76,16 +78,42 @@ export const Game: FC = () => {
 
     const winGame = () => {
         setGameStatus(GameStatus.WIN)
+        updateGameStats(true)
         setShowModal(true)
     }
 
     const loseGame = () => {
         setGameStatus(GameStatus.FAIL)
+        updateGameStats(false)
         setShowModal(true)
     }
 
     const hasWon = (states: number[]): boolean => {
         return states.every(v => v === CellState.CORRECT)
+    }
+
+    /** Need to come back to current streak */
+    const updateGameStats = (win: boolean) => {
+
+        const gamesWon = gameStats.gamesWon + (win ? 1: 0)
+        const gamesPlayed = gameStats.gamesPlayed + 1
+        const guessCount = currentRow + 1
+        
+        const updatedGameStats: GameStats = {
+            ...gameStats,
+            gamesWon,
+            gamesPlayed,
+            currentStreak: gameStats.currentStreak + 1,
+            guesses: {
+                ...gameStats.guesses,
+                fail: gameStats.guesses.fail + (win ? 0 : 1),
+                ...(win && { [guessCount]: gameStats.guesses[guessCount] + 1 }),
+            },
+            winStreak: gameStats.winStreak + (win ? 1 : 0),
+            winPercentage: gamesWon / gamesPlayed * 100
+        }
+
+        setGameStats(updatedGameStats)
     }
 
     const makeGuess = () => {
@@ -239,9 +267,9 @@ export const Game: FC = () => {
     }, [])
 
     return (
-        <GameContextProvider value={{ onButtonPress: handleButtonPress }}>
+        <GameContextProvider value={{ gameStats, updateGameStats, onButtonPress: handleButtonPress }}>
             <Modal show={showModal} onClose={handleModalClose}>
-                <GameStats />
+                <GameStatistics />
             </Modal>
             <Container ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown}>
                 <Header />

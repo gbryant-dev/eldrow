@@ -1,10 +1,6 @@
-import { BoardState, CellState } from "../../types"
+import { BoardState, CellState, GameStats } from "../../types"
 import words from "../../words"
-
-
-export const ROWS = 6
-export const COLUMNS = 5
-
+import { COLUMNS, ROWS } from "./constants"
 
 export const setupGame = (currentState: BoardState) => {
     const boardState = currentState ?? getInitialBoardState()
