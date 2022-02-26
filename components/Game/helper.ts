@@ -34,3 +34,11 @@ export const getInitialBoardState = () => {
 export const getWordForTheDay = () => {
     return words[Math.floor(Math.random() * words.length)]
 }
+
+
+export const hasPlayedInLast24Hours = (lastCompletedTs: number): boolean => {
+    const lastCompletedDate = new Date(lastCompletedTs)
+    const nowDate = new Date()
+    nowDate.setDate(nowDate.getDate() - 1) 
+    return lastCompletedDate.getTime() > nowDate.getTime()
+}

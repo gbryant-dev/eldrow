@@ -7,14 +7,14 @@ import { Keyboard } from '../Keyboard/Keyboard';
 import { Container } from './Game.style';
 import words from '../../words';
 import useLocalStorage from '../../hooks/useLocalStorage';
-import { getWordForTheDay, setupGame } from './helper';
+import { getWordForTheDay, hasPlayedInLast24Hours, setupGame } from './helper';
 import { ROWS, COLUMNS, INITIAL_GAME_STATS } from './constants';
 import Modal from '../Layout/Modal/Modal';
 import GameStatistics from '../GameStats/GameStats';
 
 
 export const Game: FC = () => {
-    const [data, setData] = useState<BoardType>([])
+    const [data, setData] = useState<BoardType | null>(null)
     const [boardState, setBoardState] = useLocalStorage<BoardState | null>('boardState', null)
     const [currentRow, setCurrentRow] = useLocalStorage<number>('currentRow', 0)
     const [solution, setSolution] = useLocalStorage<string>('solution', '')
@@ -35,9 +35,10 @@ export const Game: FC = () => {
     }, [])
 
 
-    const initialiseGame = () => {
-        const { data } = setupGame(boardState)
-        setData(data)
+    const initialiseGame = useCallback(() => {
+        if (data) return
+        const { data: gameData } = setupGame(boardState)
+        setData(gameData)
         if (gameStatus === GameStatus.STARTED) {
             setGameStatus(GameStatus.IN_PROGESS)
         } else {
@@ -45,11 +46,11 @@ export const Game: FC = () => {
                 setShowModal(true)
             }
         }
-    }
+    }, [boardState, data, gameStatus, setGameStatus])
 
     useEffect(() => {
         initialiseGame()
-    }, [])
+    }, [initialiseGame])
 
     const updateGrid = useCallback(() => {
         if (gameStatus !== GameStatus.IN_PROGESS) return
@@ -62,6 +63,7 @@ export const Game: FC = () => {
     }, [currentRow, data, gameStatus, setData])
 
     const updateBoardState = useCallback(() => {
+        if (!data) return
         const guesses = data.slice(0, currentRow).map(row => row.map(cell => cell.value).join(''))
         const evaluations = data.map(row => row.map(cell => cell.state))
         setBoardState({ guesses, evaluations })
@@ -70,7 +72,6 @@ export const Game: FC = () => {
     useEffect(() => {
         updateBoardState()
     }, [updateBoardState])
-
 
     const isValidWord = () => {
         return words.filter(word => word === currentGuessRef.current.join('')).length === 1
@@ -92,25 +93,27 @@ export const Game: FC = () => {
         return states.every(v => v === CellState.CORRECT)
     }
 
-    /** Need to come back to current streak */
     const updateGameStats = (win: boolean) => {
 
         const gamesWon = gameStats.gamesWon + (win ? 1: 0)
         const gamesPlayed = gameStats.gamesPlayed + 1
         const guessCount = currentRow + 1
-        
+        const currentStreak = hasPlayedInLast24Hours(gameStats.lastCompletedTs) ? gameStats.currentStreak + 1 : (win ? 1 : 0)
+
         const updatedGameStats: GameStats = {
             ...gameStats,
             gamesWon,
             gamesPlayed,
-            currentStreak: gameStats.currentStreak + 1,
+            currentStreak,
             guesses: {
                 ...gameStats.guesses,
                 fail: gameStats.guesses.fail + (win ? 0 : 1),
                 ...(win && { [guessCount]: gameStats.guesses[guessCount] + 1 }),
             },
-            winStreak: gameStats.winStreak + (win ? 1 : 0),
-            winPercentage: gamesWon / gamesPlayed * 100
+            maxStreak: currentStreak > gameStats.maxStreak ? currentStreak : gameStats.maxStreak,
+            winPercentage: gamesWon / gamesPlayed * 100,
+            lastCompletedTs: new Date().getTime(),
+            lastPlayedTs: new Date().getTime()
         }
 
         setGameStats(updatedGameStats)
@@ -131,12 +134,13 @@ export const Game: FC = () => {
             return
         }
 
-
         if (currentRow === ROWS - 1) {
             loseGame()
             return
         }
 
+        // Update lastPlayedTs
+        setGameStats({ ...gameStats, lastPlayedTs: new Date().getTime()})
         currentGuessRef.current = []
 
     }
@@ -258,8 +262,6 @@ export const Game: FC = () => {
         }
 
         addLetter(key)
-
-
     }
 
     const handleModalClose = useCallback(() => {

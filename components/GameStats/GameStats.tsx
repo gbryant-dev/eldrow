@@ -17,10 +17,13 @@ const GameStats: FC = () => {
               gamesPlayed={gameStats.gamesPlayed} 
               winPercentage={gameStats.winPercentage}  
               currentStreak={gameStats.currentStreak}
-              winStreak={gameStats.winStreak}  
+              maxStreak={gameStats.maxStreak}  
             />
             <Title>Guess Distribution</Title>
-            <GuessDistribution guesses={gameStats.guesses} />
+            <GuessDistribution 
+              guesses={gameStats.guesses} 
+              gamesPlayed={gameStats.gamesPlayed} 
+            />
         </Container>
     )
     

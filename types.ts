@@ -35,9 +35,11 @@ export interface BoardState {
 
 export interface GameStats {
     gamesPlayed: number,
-    winStreak: number,
+    maxStreak: number,
     currentStreak: number,
     gamesWon: number,
     winPercentage: number,
-    guesses: { fail: number, [key: number]: number }
+    guesses: { fail: number, [key: number]: number },
+    lastPlayedTs?: number,
+    lastCompletedTs?: number
 }
