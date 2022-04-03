@@ -15,4 +15,7 @@ Guess the word!
         * Add lastPlayed timestamp to deal with currentStreak 🙂
 * Modal popup on completion of game
     * Guess distribution graph 🙂
+    * Fix graph when first game is a loss
+    * Countdown timer for next wordle
+    * Share button
 * Update keyboard buttons 🙂
