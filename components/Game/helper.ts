@@ -1,8 +1,8 @@
 import { BoardState, CellState } from "../../types"
 import words from "../../words"
-import { COLUMNS, ROWS } from "./constants"
+import { COLUMNS, ROWS, START_DATE } from "./constants"
 
-export const setupGame = (currentState: BoardState) => {
+export const setupGame = (currentState?: BoardState) => {
     const boardState = currentState ?? getInitialBoardState()
     
     const gridData = Array.from({ length: ROWS })
@@ -16,7 +16,7 @@ export const setupGame = (currentState: BoardState) => {
             })
             )
         )
-    return { data: gridData }
+    return gridData
 }
 
 export const getWinKeyword = (row: number) => {
@@ -31,10 +31,23 @@ export const getInitialBoardState = () => {
     return { guesses, evaluations }
 }
 
-export const getWordForTheDay = () => {
-    return words[Math.floor(Math.random() * words.length)]
+export const getWordIndex = (ts?: number): number => {
+    const start = new Date(START_DATE)
+    const dateTs = ts ?? new Date().getTime()
+    const offset = new Date(dateTs).setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0)
+    return Math.round(offset / 864e5) % words.length
 }
 
+export const getWordForTheDay = () => {
+    const index = getWordIndex()
+    return words[index]
+}
+
+export const isNewDay = (lastPlayedTs: number): boolean => {
+    const lastPlayedIndex = getWordIndex(lastPlayedTs)
+    const currentIndex = getWordIndex()
+    return lastPlayedIndex !== currentIndex
+}
 
 export const hasPlayedInLast24Hours = (lastCompletedTs: number): boolean => {
     const lastCompletedDate = new Date(lastCompletedTs)

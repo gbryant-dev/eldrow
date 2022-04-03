@@ -1,12 +1,11 @@
-import React, { FC, useContext } from 'react'
-import { GameContext } from '../../GameContext/GameContext'
+import React, { FC } from 'react'
 import { GameStats } from '../../types'
 import { Container, Title } from './GameStats.style'
+import GameStatsFooter from './GameStatsFooter/GameStatsFooter'
 import GuessDistribution from './GuessDistribution/GuessDistribution'
 import Statistics from './Statistics/Statistics'
 
-const GameStats: FC = () => {
-    const { gameStats } = useContext(GameContext)
+const GameStats: FC<{currentRow: number, gameStats: GameStats }> = ({ currentRow, gameStats }) => {
 
     if (!gameStats) return null
 
@@ -21,9 +20,10 @@ const GameStats: FC = () => {
             />
             <Title>Guess Distribution</Title>
             <GuessDistribution 
-              guesses={gameStats.guesses} 
-              gamesPlayed={gameStats.gamesPlayed} 
+              guesses={gameStats.guesses}
+              currentRow={currentRow}
             />
+            <GameStatsFooter />
         </Container>
     )
     

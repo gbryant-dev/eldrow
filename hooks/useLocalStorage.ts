@@ -1,32 +1,28 @@
-import { useCallback, useState } from 'react'
+import { SetStateAction, useEffect, useState } from 'react'
 
-// eslint-disable-next-line no-unused-vars
-type Dispatch<A> = (action: A) => void
-// eslint-disable-next-line no-unused-vars
-type SetAction<S> = S | ((prevState: S) => S)
+function useLocalStorage<T>(key: string, initialValue?: T | (() => T)): [value: T, setValue: React.Dispatch<SetStateAction<T>>] {
 
-function useLocalStorage<T>(key: string, initialValue?: T): [value: T, set: Dispatch<SetAction<T>>] {
-    
     const [value, setValue] = useState<T>(() => {
-        if (typeof window === undefined) return initialValue
+        
+        // @ts-ignore
+        const newValue = typeof initialValue === 'function' ? initialValue() : initialValue
 
         try {
             const item = window.localStorage.getItem(key)
-            return item ? JSON.parse(item) : initialValue
+            return item ? JSON.parse(item) : newValue
         } catch (error) {
-            return initialValue
+            console.error(error)
+            return newValue
         }
         
     })
 
-    const set = useCallback((newValue: T) => {
-        setValue(newValue)
-        try {
-            localStorage.setItem(key, JSON.stringify(newValue))
-        } catch (error) {}
-    }, [key])
 
-    return [value, set]
+    useEffect(() => {
+        localStorage.setItem(key, JSON.stringify(value))
+    }, [key, value])
+
+    return [value, setValue]
 }
 
 export default useLocalStorage

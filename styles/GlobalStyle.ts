@@ -45,15 +45,14 @@ const GlobalStyle = createGlobalStyle`
     --modal-content-bg: var(--color-tone-7);
 }
 
-  html {
-    height: 100vh;
-  }
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
 
   body {
     height: 100%;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
     font-size: 16px;
     font-family: 'Roboto Regular', Helvetica, sans-serif;
   }

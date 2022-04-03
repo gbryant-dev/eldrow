@@ -48,10 +48,27 @@ const flipIn = keyframes`
     }
 `
 
-const animate = css<{ $state: CellState, $order: number }>`
+const animateFlip = css<{ $state: CellState, $order: number }>`
     animation-name: ${flipIn};
     animation-duration: 500ms;
     animation-timing-function: ease-in;
+    animation-delay: ${props => props.$order * 150}ms;
+`
+
+const popIn = keyframes`
+   0% {
+       transform: scale(0.8);
+   }
+
+   50% {
+       transform: scale(1.1);
+   }
+
+`;
+
+const animatePopIn = css<{ $state: CellState, $order: number }>`
+    animation-name: ${popIn};
+    animation-duration: 100ms;
 `
 
 export const StyledTile = styled.div<{ $state: CellState, $order: number }>`
@@ -64,8 +81,8 @@ export const StyledTile = styled.div<{ $state: CellState, $order: number }>`
     font-weight: bold;
     font-size: 2rem;
     text-transform: uppercase;
-    ${props => props.$state > 1 && animate };
-    animation-delay: ${props => props.$order * 150}ms;
+    ${props => props.$state > 1 && animateFlip };
+    ${props => props.$state === 1 && animatePopIn };
     ${props => getColorForState(props.$state)};
     
 `

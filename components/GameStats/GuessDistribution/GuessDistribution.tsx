@@ -1,18 +1,28 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { GameStats } from "../../../types";
 import { Container, GraphContainer, GraphLine, GuessLabel } from "./GuessDistribution.style";
+import { getWins } from "./helper";
 
-type Props = Partial<GameStats>
+type Props = Partial<GameStats> & { currentRow: number }
 
-const GuessDistribution: FC<Props> = ({ guesses, gamesPlayed }) => {
+const GuessDistribution: FC<Props> = ({ guesses, currentRow }) => {
+    const [wins, setWins] = useState(() => {
+        return {}
+    })
+
+
+    useEffect(() => {
+        const data = getWins(guesses)
+        setWins(data)
+    }, [guesses])
 
     return (
         <Container>
-                {Object.keys(guesses).slice(0, -1).map(key => (
+                {Object.keys(wins).map(key => (
                     <GraphContainer key={key}>
                         <div>{key}</div>
-                        <GraphLine $width={(gamesPlayed / guesses[key] * 100) / gamesPlayed}>
-                            <GuessLabel>{guesses[key]}</GuessLabel>
+                        <GraphLine $colored={key === currentRow.toString()} $width={wins[key].proportion * 100}>
+                            <GuessLabel>{wins[key].value}</GuessLabel>
                             </GraphLine> 
                     </GraphContainer>
                 ))}

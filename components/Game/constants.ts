@@ -11,3 +11,5 @@ export const INITIAL_GAME_STATS: GameStats = {
     winPercentage: 0,
     maxStreak: 0
 }
+
+export const START_DATE = new Date(2022, 1, 27, 0, 0, 0, 0)

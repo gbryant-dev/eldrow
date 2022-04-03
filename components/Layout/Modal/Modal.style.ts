@@ -42,6 +42,7 @@ export const Container = styled.div<{ $closing: boolean, $opening: boolean }>`
     transform: translateY(0);
     opacity: 1;
     animation: 300ms ${props => props.$closing ? SlideDown : SlideUp} ease-in;
+    border-radius: 8px;
 `;
 
 export const MotionContainer = styled(motion.div)`
@@ -56,7 +57,7 @@ export const MotionContainer = styled(motion.div)`
     color: var(--color-tone-1);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     padding: 16px;
-    
+    border-radius: 8px;
 `
 
 export const CloseIcon = styled.div`

@@ -9,11 +9,10 @@ Guess the word!
 * After each guess, increment current row index 🙂
 * If a correct guess, end game
     * Update status of game to finished 🙂
-    * Throw in toast
+    * Throw in toast 🙂
     * Update win streak 🙂
     * Update statistics
-        * Add lastPlayed timestamp to deal with currentStreak
+        * Add lastPlayed timestamp to deal with currentStreak 🙂
 * Modal popup on completion of game
-    * Guess distribution graph
-
-
+    * Guess distribution graph 🙂
+* Update keyboard buttons 🙂

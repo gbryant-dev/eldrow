@@ -1,14 +1,18 @@
-import React, { ButtonHTMLAttributes, FC, useContext, useEffect, useState } from 'react'
-import { GameContext } from '../../../../GameContext/GameContext'
+import React, { ButtonHTMLAttributes, FC } from 'react'
+import { CellState } from '../../../../types'
 import { StyledButton } from './KeyboardButton.style'
 
 
 interface Props {
-    value: string
+    value: string;
+    icon?: JSX.Element;
+    state: CellState;
+    // eslint-disable-next-line no-unused-vars
+    onKey: (key: string) => void;
+    sizeScale?: number;
 }
 
-export const KeyboardButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & Props> = ({ value }) => {
-    const { onButtonPress } = useContext(GameContext)
+export const KeyboardButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & Props> = ({ value, icon, state, onKey, sizeScale }) => {
 
-    return <StyledButton onClick={() => onButtonPress(value)}>{value}</StyledButton>
+    return <StyledButton $scale={sizeScale} $state={state} onClick={() => onKey(value)}>{icon ? icon : value}</StyledButton>
 }

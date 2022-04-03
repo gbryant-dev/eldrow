@@ -1,18 +1,47 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
+import { CellState } from '../../../../types'
 
+const getColorForState = (state: CellState) => {
+    switch (state) {
+        case CellState.ABSENT:
+            return css`
+                background-color: var(--key-bg-absent);
+                color: var(--tile-text-color);
+            `
+        case CellState.PRESENT:
+            return css`
+                background-color: var(--key-bg-present);
+                color: var(--tile-text-color);
+            `
+        case CellState.CORRECT:
+            return css`
+                background-color: var(--key-bg-correct);
+                color: var(--tile-text-color);
+            `
+        default:
+            return css`
+                background-color: var(--key-bg);
+                color: var(--key-text-color);
+        `
+    }
+}
 
-export const StyledButton = styled.button`
+export const StyledButton = styled.button<{ $state: CellState, $scale?: number }>`
     display: flex;
-    flex: 1;
+    flex: ${props => 1 * props.$scale};
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
     border: 0;
     border-radius: 4px;
-    margin: 2px;
+    margin-right: 6px;
     font-weight: bold;
     cursor: pointer;
     user-select: none;
-    background-color: var(--key-bg);
-    color: var(--key-text-color)
+    height: 58px;
+    ${p => getColorForState(p.$state)}
 `
+
+StyledButton.defaultProps = {
+    $scale: 1
+}

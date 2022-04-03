@@ -4,9 +4,10 @@ export const StyledHeader = styled.header`
     height: 50px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     border-bottom: 1px solid #3a3a3c;
+    padding: 0 16px;
 
 `
 
@@ -16,5 +17,4 @@ export const Title = styled.div`
     letter-spacing: 0.2rem;
     text-transform: uppercase;
     text-align: center;
-    width: 100%;
 `

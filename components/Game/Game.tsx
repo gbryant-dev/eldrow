@@ -1,101 +1,120 @@
 import React, { FC, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { GameContextProvider } from '../../GameContext/GameContext';
 import { BoardState, BoardType, CellState, GameStats, GameStatus } from '../../types';
 import { Board } from '../Board/Board';
-import { Header } from '../Layout/Header/Header';
 import { Keyboard } from '../Keyboard/Keyboard';
 import { Container } from './Game.style';
 import words from '../../words';
 import useLocalStorage from '../../hooks/useLocalStorage';
-import { getWordForTheDay, hasPlayedInLast24Hours, setupGame } from './helper';
+import { getInitialBoardState, getWinKeyword, getWordForTheDay, hasPlayedInLast24Hours, isNewDay, setupGame } from './helper';
 import { ROWS, COLUMNS, INITIAL_GAME_STATS } from './constants';
 import Modal from '../Layout/Modal/Modal';
 import GameStatistics from '../GameStats/GameStats';
-
+import Toaster from '../Toaster/Toaster';
+import { ToastProps } from '../Toaster/Toast/Toast';
 
 export const Game: FC = () => {
-    const [data, setData] = useState<BoardType | null>(null)
-    const [boardState, setBoardState] = useLocalStorage<BoardState | null>('boardState', null)
+    const [data, setData] = useState<BoardType | null>(() => setupGame())
+    const [boardState, setBoardState] = useLocalStorage<BoardState | null>('boardState', () => getInitialBoardState())
     const [currentRow, setCurrentRow] = useLocalStorage<number>('currentRow', 0)
-    const [solution, setSolution] = useLocalStorage<string>('solution', '')
-    const [gameStatus, setGameStatus] = useLocalStorage<GameStatus>('gameStatus', GameStatus.STARTED)
+    const [solution, setSolution] = useLocalStorage<string>('solution', () => getWordForTheDay())
+    const [gameStatus, setGameStatus] = useLocalStorage<GameStatus>('gameStatus', GameStatus.IN_PROGRESS)
     const [showModal, setShowModal] = useState(false)
     const [gameStats, setGameStats] = useLocalStorage<GameStats>('statistics', INITIAL_GAME_STATS)
+    const [toasts, setToasts] = useState<ToastProps[]>([])
+    const [keyStates, setKeyStates] = useLocalStorage<{ [k: string]: CellState }>('keyStates', {})
 
     const containerRef = useRef<HTMLDivElement>(null)
     const currentGuessRef = useRef<string[]>([])
-
-    useEffect(() => {
-        const word = getWordForTheDay()
-        setSolution(word)
-    }, [setSolution])
+    const loadedRef = useRef<boolean>(false)
+    const animatingRef = useRef<boolean>(false)
 
     useEffect(() => {
         containerRef.current?.focus()
     }, [])
 
-
-    const initialiseGame = useCallback(() => {
-        if (data) return
-        const { data: gameData } = setupGame(boardState)
-        setData(gameData)
-        if (gameStatus === GameStatus.STARTED) {
-            setGameStatus(GameStatus.IN_PROGESS)
-        } else {
-            if (gameStatus !== GameStatus.IN_PROGESS) {
-                setShowModal(true)
-            }
+    useEffect(() => {
+        if (!loadedRef.current) {
+            const state = setupGame(boardState)
+            setData(state)
+            loadedRef.current = true
         }
-    }, [boardState, data, gameStatus, setGameStatus])
+    }, [boardState, gameStatus, currentRow])
 
     useEffect(() => {
-        initialiseGame()
-    }, [initialiseGame])
+        const hasData = data.flat().map(cell => cell.state).reduce((prev, curr) => prev + curr, 0)
+        if (gameStatus !== GameStatus.IN_PROGRESS && hasData > 0) {
+            setShowModal(true)
+        }
+    }, [data, gameStatus])
 
-    const updateGrid = useCallback(() => {
-        if (gameStatus !== GameStatus.IN_PROGESS) return
-        const updatedData = data.map((row, r) => r !== currentRow ?
+
+    useEffect(() => {
+        const newKeyStates: { [k: string]: CellState } = {}
+        data.slice(0, currentRow).forEach(row => row.forEach(({ value, state }) => {
+            newKeyStates[value] = getBestState(value, state, newKeyStates)
+        }))
+
+        setKeyStates(newKeyStates)
+    }, [currentRow, data, setKeyStates])
+
+    const resetGame = useCallback(() => {
+        setBoardState(getInitialBoardState())
+        setCurrentRow(0)
+        setGameStatus(GameStatus.IN_PROGRESS)
+        setData(setupGame())
+        setSolution(getWordForTheDay())
+    }, [setBoardState, setCurrentRow, setGameStatus, setSolution])
+
+    useEffect(() => {
+        if (!loadedRef.current) return
+        if (!gameStats.lastPlayedTs || isNewDay(gameStats.lastPlayedTs)) {
+            resetGame()
+        }
+    }, [gameStats.lastPlayedTs, resetGame])
+
+    const updateGrid = () => {
+        if (gameStatus !== GameStatus.IN_PROGRESS) return
+
+        setData(data => data.map((row, r) => r !== currentRow ?
             [...row] :
             row.map((cell, c) => ({ ...cell, value: currentGuessRef.current[c] ?? '', state: currentGuessRef.current[c] ? CellState.TBD : CellState.EMPTY })
-            ))
-        setData(updatedData)
-
-    }, [currentRow, data, gameStatus, setData])
-
-    const updateBoardState = useCallback(() => {
-        if (!data) return
-        const guesses = data.slice(0, currentRow).map(row => row.map(cell => cell.value).join(''))
-        const evaluations = data.map(row => row.map(cell => cell.state))
-        setBoardState({ guesses, evaluations })
-    }, [data, setBoardState, currentRow])
-
-    useEffect(() => {
-        updateBoardState()
-    }, [updateBoardState])
+            )))
+    }
 
     const isValidWord = () => {
         return words.filter(word => word === currentGuessRef.current.join('')).length === 1
     }
 
     const winGame = () => {
+        addToast(getWinKeyword(currentRow), 1500)
         setGameStatus(GameStatus.WIN)
         updateGameStats(true)
-        setShowModal(true)
+        animatingRef.current = true
+        setTimeout(() => {
+            setShowModal(true)
+            animatingRef.current = false
+        }, 2000)
+
     }
 
     const loseGame = () => {
+        addToast(solution.toUpperCase(), 1500)
         setGameStatus(GameStatus.FAIL)
         updateGameStats(false)
-        setShowModal(true)
+        animatingRef.current = true
+        setTimeout(() => {
+            setShowModal(true)
+            animatingRef.current = false
+        }, 2000)
     }
 
-    const hasWon = (states: number[]): boolean => {
+    const isCorrectGuess = (states: number[]): boolean => {
         return states.every(v => v === CellState.CORRECT)
     }
 
     const updateGameStats = (win: boolean) => {
 
-        const gamesWon = gameStats.gamesWon + (win ? 1: 0)
+        const gamesWon = gameStats.gamesWon + (win ? 1 : 0)
         const gamesPlayed = gameStats.gamesPlayed + 1
         const guessCount = currentRow + 1
         const currentStreak = hasPlayedInLast24Hours(gameStats.lastCompletedTs) ? gameStats.currentStreak + 1 : (win ? 1 : 0)
@@ -110,8 +129,8 @@ export const Game: FC = () => {
                 fail: gameStats.guesses.fail + (win ? 0 : 1),
                 ...(win && { [guessCount]: gameStats.guesses[guessCount] + 1 }),
             },
-            maxStreak: currentStreak > gameStats.maxStreak ? currentStreak : gameStats.maxStreak,
-            winPercentage: gamesWon / gamesPlayed * 100,
+            maxStreak: Math.max(currentStreak, gameStats.maxStreak),
+            winPercentage: Math.round(gamesWon / gamesPlayed * 100),
             lastCompletedTs: new Date().getTime(),
             lastPlayedTs: new Date().getTime()
         }
@@ -120,16 +139,29 @@ export const Game: FC = () => {
     }
 
     const makeGuess = () => {
-        if (currentGuessRef.current.length < COLUMNS) return
-        if (!isValidWord()) return
+        if (currentGuessRef.current.length < COLUMNS) {
+            addToast('Not enough letters')
+            return
+        }
+
+        if (!isValidWord()) {
+            addToast('Not in word list')
+            return
+        }
 
         const states = evaluateGuess()
-        updateCellStates(states)
+        const updatedData = updateCellStates(states)
 
         const nextRow = currentRow + 1
         setCurrentRow(nextRow)
 
-        if (hasWon(states)) {
+        const guesses = updatedData.slice(0, nextRow).map(row => row.map(cell => cell.value).join(''))
+        const evaluations = updatedData.map(row => row.map(cell => cell.state))
+
+        setBoardState({ guesses, evaluations })
+
+
+        if (isCorrectGuess(states)) {
             winGame()
             return
         }
@@ -140,7 +172,7 @@ export const Game: FC = () => {
         }
 
         // Update lastPlayedTs
-        setGameStats({ ...gameStats, lastPlayedTs: new Date().getTime()})
+        setGameStats({ ...gameStats, lastPlayedTs: new Date().getTime() })
         currentGuessRef.current = []
 
     }
@@ -178,6 +210,7 @@ export const Game: FC = () => {
             }
 
             evaluations[i] = status
+
         })
 
         return evaluations
@@ -185,15 +218,26 @@ export const Game: FC = () => {
     }
 
     const updateCellStates = (states: CellState[]) => {
-        setData(data => data.map((row, r) => {
+        const updatedData = data.map((row, r) => {
             return r !== currentRow ?
                 [...row] :
                 row.map((cell, c) => ({ ...cell, state: states[c] }))
-        }))
+        })
+
+        setData(updatedData)
+        return updatedData
+    }
+
+    const getBestState = (letter: string, state: CellState, states: { [k: string]: CellState }) => {
+        // Get current state
+        const currentState = states[letter] ?? CellState.EMPTY
+
+        // Compare against state 
+        return Math.max(currentState, state) as CellState
     }
 
     const isValidKey = (key: string) => {
-        return /\b([a-z]|backspace|enter)\b/i.test(key)
+        return /^[a-z]$/.test(key)
     }
 
     const addLetter = (key: string) => {
@@ -218,35 +262,19 @@ export const Game: FC = () => {
 
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
 
-        // If the game is not in progress, return
-        if (gameStatus !== GameStatus.IN_PROGESS) return
 
         const { key, ctrlKey, metaKey, shiftKey, altKey } = event
 
         // Ignore meta keys e.g Ctrl, Shift etc
         if (ctrlKey || metaKey || shiftKey || altKey) return
 
-        // Only interested in A-Z, Backspace and Enter
-        if (!isValidKey(key)) return
-
-        // Check for special keys first
-        if (key === 'Enter') {
-            makeGuess()
-            return
-        }
-
-        if (key === 'Backspace') {
-            removeLetter()
-            return
-        }
-
-        addLetter(key)
+        handleKey(key)
 
     }
 
-    const handleButtonPress = (key: string) => {
+    const handleKey = (key: string) => {
 
-        if (gameStatus !== GameStatus.IN_PROGESS) return
+        if (animatingRef.current) return
 
         const loweredKey = key.toLowerCase()
 
@@ -261,6 +289,9 @@ export const Game: FC = () => {
             return
         }
 
+        // Only interested in A-Z
+        if (!isValidKey(key)) return
+
         addLetter(key)
     }
 
@@ -268,17 +299,21 @@ export const Game: FC = () => {
         setShowModal(false)
     }, [])
 
+    const addToast = (text: string, duration: number = 1000) => {
+        setToasts(current => [...current, { text, duration }])
+    }
+
     return (
-        <GameContextProvider value={{ gameStats, updateGameStats, onButtonPress: handleButtonPress }}>
+        <>
+            <Toaster toasts={toasts} />
             <Modal show={showModal} onClose={handleModalClose}>
-                <GameStatistics />
+                <GameStatistics gameStats={gameStats} currentRow={currentRow} />
             </Modal>
             <Container ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown}>
-                <Header />
-                {data && <Board data={data} />}
-                <Keyboard />
+                {data && <Board data={data} currentRow={currentRow} />}
+                <Keyboard onKey={handleKey} states={keyStates} />
             </Container>
-        </GameContextProvider>
+        </>
     )
 
 }

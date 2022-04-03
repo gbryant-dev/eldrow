@@ -23,7 +23,7 @@ export type BoardType = Cell[][]
 
 export enum GameStatus {
     STARTED = "STARTED",
-    IN_PROGESS = "IN_PROGRESS",
+    IN_PROGRESS = "IN_PROGRESS",
     WIN = "WIN",
     FAIL = "FAIL"
 }

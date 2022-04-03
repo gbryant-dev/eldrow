@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
-    width: 80%;
+    width: 100%;
     padding-bottom: 10px;
 `;
 
@@ -17,12 +17,13 @@ export const GuessLabel = styled.div`
     color: var(--tile-text-color);
 `;
 
-export const GraphLine = styled.div<{ $width?: number }>`
+export const GraphLine = styled.div<{ $width?: number, $colored: boolean }>`
     display: flex;
-    background-color: var(--color-correct);
-    width: ${p => p.$width ?? 7}%; 
+    background-color: ${p => p.$colored ? 'var(--color-correct)' : 'var(--color-absent)'};
+    width: ${p => Math.max(p.$width, 4)}%; 
     height: 100%;
     margin-left: 4px;
     padding-right: 8px;
     justify-content: flex-end;
+    text-align: center;
 `;

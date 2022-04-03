@@ -6,6 +6,7 @@ export const Container = styled.div`
     align-items: center;
     flex-direction: column;
     padding: 16px 0;
+    width: 80%;
 `;
 
 export const Title = styled.h1`

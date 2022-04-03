@@ -1,18 +1,20 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { BoardType } from "../../types";
 import { GameRow } from "../Game/GameRow/GameRow";
 import { Container, Grid } from "./Board.style";
 
 interface Props {
-    data: BoardType
+  data: BoardType;
+  currentRow: number;
 }
 
-export const Board: FC<Props> = ({ data }) => {
+export const Board: FC<Props> = ({ data, currentRow }) => {
 
-    return <Container>
-        <Grid>
-            {/* {Array.from({ length: rows }).map((_, i) => <GameRow key={i} columns={columns} />)} */}
-            {data.map((row, i) => <GameRow key={i} i={i} row={row} />)}
-        </Grid>
+  return (
+    <Container>
+      <Grid>
+        {data.map((row, i) => <GameRow isCurrent={i === currentRow} key={i} row={row} />)}
+      </Grid>
     </Container>
+  )
 }

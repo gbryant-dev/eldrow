@@ -4,13 +4,16 @@ import { Container } from './GameRow.style'
 import GameTile from './GameTile/GameTile'
 
 interface Props {
-    row: Cell[];
-    i: number;
-    word?: string;
+  row: Cell[];
+  word?: string;
+  isCurrent: boolean;
 }
 
 export const GameRow: FC<Props> = ({ row }) => {
-    return <Container>
-        {row.map((cell, i) => <GameTile key={i} cell={cell} />)}
+
+  return (
+    <Container>
+      {row.map((cell, i) => <GameTile key={i} cell={cell} />)}
     </Container>
+  )
 }
