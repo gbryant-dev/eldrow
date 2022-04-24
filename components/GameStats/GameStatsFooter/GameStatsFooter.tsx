@@ -44,8 +44,6 @@ const GameStatsFooter: FC<Props> = ({ currentRow, cellEvaluations }) => {
             return (stateMap[state] || stateMap.default)
         }).join('')).join('\n')
 
-        console.log(content, currentRow)
-
         await window.navigator.clipboard.writeText(content)
     }
 
