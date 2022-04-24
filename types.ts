@@ -22,7 +22,6 @@ export interface Cell {
 export type BoardType = Cell[][]
 
 export enum GameStatus {
-    STARTED = "STARTED",
     IN_PROGRESS = "IN_PROGRESS",
     WIN = "WIN",
     FAIL = "FAIL"

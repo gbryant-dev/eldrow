@@ -18,12 +18,11 @@ export const GuessLabel = styled.div`
 `;
 
 export const GraphLine = styled.div<{ $width?: number, $colored: boolean }>`
-    display: flex;
     background-color: ${p => p.$colored ? 'var(--color-correct)' : 'var(--color-absent)'};
     width: ${p => Math.max(p.$width, 4)}%; 
     height: 100%;
     margin-left: 4px;
     padding-right: 8px;
-    justify-content: flex-end;
-    text-align: center;
+    padding-left: 4px;
+    text-align: right;
 `;

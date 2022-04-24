@@ -19,6 +19,22 @@ export const Share = styled.div`
     align-items: center;
     padding-left: 12px;
 `
+export const ShareButton = styled.button`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: var(--key-bg-correct);
+    color: var(--tile-text-color);
+    text-transform: uppercase;
+    width: 80%;
+    height: 52px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+`
 
 export const Title = styled.div`
     font-size: 16px;
@@ -27,4 +43,10 @@ export const Title = styled.div`
     text-transform: uppercase;
     text-align: center;
     width: 100%;
+    margin-bottom: 10px;
+`
+
+export const Timer = styled.div`
+    font-size: 24px;
+    text-align: center;
 `

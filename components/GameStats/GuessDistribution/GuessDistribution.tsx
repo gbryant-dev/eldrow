@@ -18,14 +18,14 @@ const GuessDistribution: FC<Props> = ({ guesses, currentRow }) => {
 
     return (
         <Container>
-                {Object.keys(wins).map(key => (
-                    <GraphContainer key={key}>
-                        <div>{key}</div>
-                        <GraphLine $colored={key === currentRow.toString()} $width={wins[key].proportion * 100}>
-                            <GuessLabel>{wins[key].value}</GuessLabel>
-                            </GraphLine> 
-                    </GraphContainer>
-                ))}
+            {Object.keys(wins).map(key => (
+                <GraphContainer key={key}>
+                    <div>{key}</div>
+                    <GraphLine $colored={key === currentRow.toString()} $width={wins[key].proportion * 100}>
+                        <GuessLabel>{wins[key].value}</GuessLabel>
+                    </GraphLine>
+                </GraphContainer>
+            ))}
         </Container>
     )
 }

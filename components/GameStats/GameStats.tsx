@@ -1,11 +1,18 @@
 import React, { FC } from 'react'
-import { GameStats } from '../../types'
+import { BoardState, GameStats, GameStatus } from '../../types'
 import { Container, Title } from './GameStats.style'
 import GameStatsFooter from './GameStatsFooter/GameStatsFooter'
 import GuessDistribution from './GuessDistribution/GuessDistribution'
 import Statistics from './Statistics/Statistics'
 
-const GameStats: FC<{currentRow: number, gameStats: GameStats }> = ({ currentRow, gameStats }) => {
+interface Props {
+  currentRow: number;
+  gameStats: GameStats;
+  boardState: BoardState;
+  gameStatus: GameStatus;
+}
+
+const GameStats: FC<Props> = ({ currentRow, gameStats, boardState, gameStatus }) => {
 
     if (!gameStats) return null
 
@@ -19,11 +26,8 @@ const GameStats: FC<{currentRow: number, gameStats: GameStats }> = ({ currentRow
               maxStreak={gameStats.maxStreak}  
             />
             <Title>Guess Distribution</Title>
-            <GuessDistribution 
-              guesses={gameStats.guesses}
-              currentRow={currentRow}
-            />
-            <GameStatsFooter />
+            <GuessDistribution currentRow={currentRow} guesses={gameStats.guesses} />
+            {gameStatus !== GameStatus.IN_PROGRESS && <GameStatsFooter currentRow={currentRow} cellEvaluations={boardState.evaluations} />}
         </Container>
     )
     

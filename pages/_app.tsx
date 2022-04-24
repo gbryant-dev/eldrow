@@ -4,7 +4,7 @@ import GlobalStyle from '../styles/GlobalStyle'
 function MyApp({ Component, pageProps }: AppProps) {
 
   
-  return typeof window !== undefined && (
+  return (
     <>
       <GlobalStyle />
       <Component {...pageProps} />

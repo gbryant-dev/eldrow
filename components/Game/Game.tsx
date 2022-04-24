@@ -100,6 +100,7 @@ export const Game: FC = () => {
     const loseGame = () => {
         addToast(solution.toUpperCase(), 1500)
         setGameStatus(GameStatus.FAIL)
+        setCurrentRow(row => row + 1)
         updateGameStats(false)
         animatingRef.current = true
         setTimeout(() => {
@@ -117,19 +118,20 @@ export const Game: FC = () => {
         const gamesWon = gameStats.gamesWon + (win ? 1 : 0)
         const gamesPlayed = gameStats.gamesPlayed + 1
         const guessCount = currentRow + 1
-        const currentStreak = hasPlayedInLast24Hours(gameStats.lastCompletedTs) ? gameStats.currentStreak + 1 : (win ? 1 : 0)
+        const currentStreak = hasPlayedInLast24Hours(gameStats.lastCompletedTs) ? gameStats.currentStreak : 0
+        const newStreak = win ? currentStreak + 1 : 0
 
         const updatedGameStats: GameStats = {
             ...gameStats,
             gamesWon,
             gamesPlayed,
-            currentStreak,
+            currentStreak: newStreak,
             guesses: {
                 ...gameStats.guesses,
                 fail: gameStats.guesses.fail + (win ? 0 : 1),
                 ...(win && { [guessCount]: gameStats.guesses[guessCount] + 1 }),
             },
-            maxStreak: Math.max(currentStreak, gameStats.maxStreak),
+            maxStreak: Math.max(newStreak, gameStats.maxStreak),
             winPercentage: Math.round(gamesWon / gamesPlayed * 100),
             lastCompletedTs: new Date().getTime(),
             lastPlayedTs: new Date().getTime()
@@ -307,7 +309,7 @@ export const Game: FC = () => {
         <>
             <Toaster toasts={toasts} />
             <Modal show={showModal} onClose={handleModalClose}>
-                <GameStatistics gameStats={gameStats} currentRow={currentRow} />
+                <GameStatistics boardState={boardState} gameStats={gameStats} gameStatus={gameStatus} currentRow={currentRow} />
             </Modal>
             <Container ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown}>
                 {data && <Board data={data} currentRow={currentRow} />}
